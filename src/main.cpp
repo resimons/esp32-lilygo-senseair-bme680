@@ -22,6 +22,15 @@
 #include <Adafruit_SSD1306.h>
 #include "bme680.h"
 
+#include "config.h"
+#include "log.h"
+#include "senseair_s8.h"
+#include "storage.h"
+#include "co2ValuesArray.h"
+#include "timeHelper.h"
+#include "messages.h"
+
+
 #define LORA_CS 18
 #define LORA_RESET 23
 #define LORA_DIO0 26
@@ -40,6 +49,11 @@
 #define OLED_ADDRESS 0x3C // See https://randomnerdtutorials.com/esp32-ssd1306-oled-display-arduino-ide/
 
 #define SEALEVELPRESSURE_HPA (1013.25)
+
+unsigned long previousMillisProbe = 0;
+unsigned long intervalProbe = 4000;      // this is the internal update interval of the CO2 sensor
+unsigned long previousMillisPublish = 0;
+unsigned long intervalPublish = 10000;
 
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
@@ -63,8 +77,21 @@ void setup() {
   display.setTextColor(WHITE);
   display.setTextSize(1);
 
+  Serial.println("Hier");
+  timeHelper_setup();
+
+  Serial.println("Hier1");
+  storage_init();
+  Serial.println("Hier2");
+  co2valuesArray_init();
+
+  Serial.println("Hier3");
+  co2_setup();
+
+  Serial.println("Hier4");
   bme680Setup();
 
+  Serial.println("Hier5");
   display.setCursor(10,10);
   display.print("BME680 found");
 
@@ -94,20 +121,41 @@ void setup() {
   Serial.println("-- Weather Station Scenario --");
   Serial.println("forced mode, 1x temperature / 1x humidity / 1x pressure oversampling,");
   Serial.println("filter off");
+  Serial.println("Hier6");
 
+  sendAlive(ssid);
+  Serial.println("Hier7");
 }
 
-void sendMessage(String outgoing);
+void loop()
+{
 
-void loop() {
+  unsigned long currentMillis = millis();
 
-    // The sensor should be read every 60 seconds when in Forced mode, according to the datasheet and Adafruit library
-    delay(60000);
+  if (currentMillis - previousMillisProbe >= intervalProbe)
+  {
+    previousMillisProbe = currentMillis;
+
+    co2_requestValueAndStatus();
+    co2values.addCO2value(co2_value);
+
+    if (calibrationStatus == 2) {
+      co2_checkBackgroundCalibrationAck();
+    }
+
+    bme680Read();
+  }
+
+  if (currentMillis - previousMillisPublish >= intervalPublish)
+  {
+    previousMillisPublish = currentMillis;
+
+    timeHelper_update();
+
+    // co2values.maintainValues();
+
+    getNVSStatistics();
+
+    sendMeasurements(ssid);
+  }
 }
-
-void sendMessage(String outgoing) {
-  LoRa.beginPacket();                   // start packet
-  LoRa.print(outgoing);                 // add payload
-  LoRa.endPacket();                     // finish packet and send it
-}
-
