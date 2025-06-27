@@ -18,18 +18,13 @@
 #include <LoRa.h>
 #include <SPI.h>
 #include <Adafruit_Sensor.h>
+#include <Adafruit_BME680.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
-#include "bme680.h"
 
 #include "config.h"
 #include "log.h"
 #include "senseair_s8.h"
-#include "storage.h"
-#include "co2ValuesArray.h"
-#include "timeHelper.h"
-#include "messages.h"
-
 
 #define LORA_CS 18
 #define LORA_RESET 23
@@ -56,6 +51,7 @@ unsigned long previousMillisPublish = 0;
 unsigned long intervalPublish = 10000;
 
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
+Adafruit_BME680 bme; // I2C
 
 char ssid[23];
 
@@ -77,19 +73,20 @@ void setup() {
   display.setTextColor(WHITE);
   display.setTextSize(1);
 
-  Serial.println("Hier");
-  timeHelper_setup();
+  if (!bme.begin(0x77)) {
+    Serial.println(F("Could not find a valid BME680 sensor, check wiring!"));
+    while (1);
+  }
 
-  Serial.println("Hier1");
-  storage_init();
-  Serial.println("Hier2");
-  co2valuesArray_init();
+  // Set up oversampling and filter initialization
+  bme.setTemperatureOversampling(BME680_OS_8X);
+  bme.setHumidityOversampling(BME680_OS_2X);
+  bme.setPressureOversampling(BME680_OS_4X);
+  bme.setIIRFilterSize(BME680_FILTER_SIZE_3);
+  bme.setGasHeater(320, 150); // 320*C for 150 ms
 
   Serial.println("Hier3");
-  co2_setup();
-
-  Serial.println("Hier4");
-  bme680Setup();
+  // co2_setup();
 
   Serial.println("Hier5");
   display.setCursor(10,10);
@@ -117,45 +114,106 @@ void setup() {
   LoRa.setCodingRate4(5);
   LoRa.setSyncWord(0x12);
 
-  // weather monitoring
-  Serial.println("-- Weather Station Scenario --");
-  Serial.println("forced mode, 1x temperature / 1x humidity / 1x pressure oversampling,");
-  Serial.println("filter off");
-  Serial.println("Hier6");
-
-  sendAlive(ssid);
-  Serial.println("Hier7");
+  // sendAlive(ssid);
 }
 
-void loop()
-{
+void sendMessage(String outgoing);
 
-  unsigned long currentMillis = millis();
-
-  if (currentMillis - previousMillisProbe >= intervalProbe)
-  {
-    previousMillisProbe = currentMillis;
-
-    co2_requestValueAndStatus();
-    co2values.addCO2value(co2_value);
-
-    if (calibrationStatus == 2) {
-      co2_checkBackgroundCalibrationAck();
-    }
-
-    bme680Read();
+void loop() {
+  // Tell BME680 to begin measurement.
+  unsigned long endTime = bme.beginReading();
+  if (endTime == 0) {
+    Serial.println(F("Failed to begin reading :("));
+    return;
   }
+  Serial.print(F("Reading started at "));
+  Serial.print(millis());
+  Serial.print(F(" and will finish at "));
+  Serial.println(endTime);
 
-  if (currentMillis - previousMillisPublish >= intervalPublish)
-  {
-    previousMillisPublish = currentMillis;
+  Serial.println(F("You can do other work during BME680 measurement."));
+  delay(50); // This represents parallel work.
+  // There's no need to delay() until millis() >= endTime: bme.endReading()
+  // takes care of that. It's okay for parallel work to take longer than
+  // BME680's measurement time.
 
-    timeHelper_update();
-
-    // co2values.maintainValues();
-
-    getNVSStatistics();
-
-    sendMeasurements(ssid);
+  // Obtain measurement results from BME680. Note that this operation isn't
+  // instantaneous even if milli() >= endTime due to I2C/SPI latency.
+  if (!bme.endReading()) {
+    Serial.println(F("Failed to complete reading :("));
+    return;
   }
+  Serial.print(F("Reading completed at "));
+  Serial.println(millis());
+
+  Serial.print(F("Temperature = "));
+  Serial.print(bme.temperature);
+  Serial.println(F(" *C"));
+
+  Serial.print(F("Pressure = "));
+  Serial.print(bme.pressure / 100.0);
+  Serial.println(F(" hPa"));
+
+  Serial.print(F("Humidity = "));
+  Serial.print(bme.humidity);
+  Serial.println(F(" %"));
+
+  Serial.print(F("Gas = "));
+  Serial.print(bme.gas_resistance / 1000.0);
+  Serial.println(F(" KOhms"));
+
+  Serial.print(F("Approx. Altitude = "));
+  Serial.print(bme.readAltitude(SEALEVELPRESSURE_HPA));
+  Serial.println(F(" m"));
+
+  Serial.println();
+  delay(2000);
+}
+
+void displayAndSendBmeValues() {
+
+    String temp = String(bme.readTemperature());
+    String pressure = String(bme.readPressure() / 100);
+    String humidity = String(bme.readHumidity());
+    String gasResistance = String(bme.gas_resistance / 1000);
+    String altitude = String(bme.readAltitude(SEALEVELPRESSURE_HPA));
+
+    display.clearDisplay();
+    display.setCursor(10,10);
+    display.print("Temp:  " + temp + " C");
+    display.setCursor(10,25);
+    display.print("Press: " + pressure + " hPa");
+    display.setCursor(10,40);
+    display.print("Hum:   " + humidity + " %");
+    display.setCursor(10,55);
+    display.print("GAs:   " + gasResistance + " m");
+    display.display();
+
+    String payload = "";
+    payload += "{\"temperature\":";
+    payload += temp;
+    payload += ",\"pressure\":";
+    payload += pressure;
+    payload += ",\"humidity\":";
+    payload += humidity;
+    payload += ",\"gas_resistance\":";
+    payload += gasResistance;
+    payload += ",\"altitude\":";
+    payload += altitude;
+    payload += ",\"sensor\":";
+    payload += "\"bme280\"";
+    payload += ",\"device\":";
+    payload += "\"";
+    payload += ssid;
+    payload += "\"";
+    payload += "}";
+
+    sendMessage(payload);
+}
+
+void sendMessage(String outgoing) {
+  LoRa.beginPacket();                   // start packet
+  LoRa.print(outgoing);                 // add payload
+  LoRa.endPacket();                     // finish packet and send it
+  Serial.println(outgoing);
 }

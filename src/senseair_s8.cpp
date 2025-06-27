@@ -35,6 +35,9 @@ unsigned long co2_ABCperiod = 0;
 byte calibrationStatus = 0;
 Ticker calibrationWatchdog;
 
+#define RXD2 5
+#define TXD2 17
+
 void setCO2value(long aValue) {
   co2_value = aValue;
 }
@@ -42,8 +45,8 @@ void setCO2value(long aValue) {
 void co2_setup()
 {
   Serial.println("start co2-setup serial begin");
-  CO2Serial.setPins(RX, TX);
-  CO2Serial.begin(BAUDRATE, SERIAL_8N1, RX, TX);
+  CO2Serial.setPins(RXD2, TXD2);
+  CO2Serial.begin(BAUDRATE, SERIAL_8N1, RXD2, TXD2);
   CO2Serial.setHwFlowCtrlMode(UART_HW_FLOWCTRL_DISABLE);
   
   Serial.println("start co2-setup serial eind");
