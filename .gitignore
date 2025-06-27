@@ -3,3 +3,9 @@
 .vscode/c_cpp_properties.json
 .vscode/launch.json
 .vscode/ipch
+.idea/esp32-lilygo-senseair-bme680.iml
+.idea/.gitignore
+.idea/misc.xml
+.gitignore
+.idea/vcs.xml
+.gitignore
