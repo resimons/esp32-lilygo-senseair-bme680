@@ -73,7 +73,7 @@ void setup() {
   display.setTextColor(WHITE);
   display.setTextSize(1);
 
-  if (!bme.begin(0x77)) {
+  if (!bme.begin(0x76)) {
     Serial.println(F("Could not find a valid BME680 sensor, check wiring!"));
     while (1);
   }
@@ -118,6 +118,7 @@ void setup() {
 }
 
 void sendMessage(String outgoing);
+void displayAndSendBmeValues();
 
 void loop() {
   // Tell BME680 to begin measurement.
@@ -143,30 +144,9 @@ void loop() {
     Serial.println(F("Failed to complete reading :("));
     return;
   }
-  Serial.print(F("Reading completed at "));
-  Serial.println(millis());
 
-  Serial.print(F("Temperature = "));
-  Serial.print(bme.temperature);
-  Serial.println(F(" *C"));
+  displayAndSendBmeValues();
 
-  Serial.print(F("Pressure = "));
-  Serial.print(bme.pressure / 100.0);
-  Serial.println(F(" hPa"));
-
-  Serial.print(F("Humidity = "));
-  Serial.print(bme.humidity);
-  Serial.println(F(" %"));
-
-  Serial.print(F("Gas = "));
-  Serial.print(bme.gas_resistance / 1000.0);
-  Serial.println(F(" KOhms"));
-
-  Serial.print(F("Approx. Altitude = "));
-  Serial.print(bme.readAltitude(SEALEVELPRESSURE_HPA));
-  Serial.println(F(" m"));
-
-  Serial.println();
   delay(2000);
 }
 
@@ -179,14 +159,16 @@ void displayAndSendBmeValues() {
     String altitude = String(bme.readAltitude(SEALEVELPRESSURE_HPA));
 
     display.clearDisplay();
-    display.setCursor(10,10);
-    display.print("Temp:  " + temp + " C");
-    display.setCursor(10,25);
-    display.print("Press: " + pressure + " hPa");
-    display.setCursor(10,40);
-    display.print("Hum:   " + humidity + " %");
-    display.setCursor(10,55);
-    display.print("GAs:   " + gasResistance + " m");
+    display.setCursor(7,10);
+    display.print("Temp: " + temp + " C");
+    display.setCursor(7,22);
+    display.print("Press:" + pressure + " hPa");
+    display.setCursor(7,34);
+    display.print("Hum:  " + humidity + " %");
+    display.setCursor(7,46);
+    display.print("Gas:  " + gasResistance + " m");
+    display.setCursor(7,58);
+    display.print("SSID: " + String(ssid) + " m");
     display.display();
 
     String payload = "";
@@ -201,7 +183,7 @@ void displayAndSendBmeValues() {
     payload += ",\"altitude\":";
     payload += altitude;
     payload += ",\"sensor\":";
-    payload += "\"bme280\"";
+    payload += "\"bme680\"";
     payload += ",\"device\":";
     payload += "\"";
     payload += ssid;
