@@ -32,11 +32,13 @@ HardwareSerial CO2Serial(2);
 unsigned long co2_value = 0;
 unsigned long co2_status = 0;
 unsigned long co2_ABCperiod = 0;
+bool timeOut = false;
+
 byte calibrationStatus = 0;
 Ticker calibrationWatchdog;
 
-#define RXD2 5
-#define TXD2 17
+#define RXD2 3
+#define TXD2 1
 
 void setCO2value(long aValue) {
   co2_value = aValue;
@@ -44,13 +46,8 @@ void setCO2value(long aValue) {
 
 void co2_setup()
 {
-  Serial.println("start co2-setup serial begin");
-  CO2Serial.setPins(RXD2, TXD2);
-  CO2Serial.begin(BAUDRATE, SERIAL_8N1, RXD2, TXD2);
+  CO2Serial.begin( 9600 , SERIAL_8N1, RXD2, TXD2);
   CO2Serial.setHwFlowCtrlMode(UART_HW_FLOWCTRL_DISABLE);
-  
-  Serial.println("start co2-setup serial eind");
-  Log.printf("  Senseair S8 sucessfully initialized.\r\n");
 }
 
 void clearResponse() {
@@ -65,17 +62,18 @@ bool doRequest(byte request[], int requestSize, int responseSize)
   unsigned long startMillis = millis();
   while (!CO2Serial.available())
   {
-    // Log.printf("request: not available\r\n");
     CO2Serial.write(request, requestSize);
     delay(50);
 
     if (millis()-startMillis > 1000) {
+      timeOut = true;
       // timeout
-      Serial.println("Time out");
+      // Serial.println("Time out");
       return false;
     }
   }
 
+  timeOut = false;
   int timeout = 0;
   while (CO2Serial.available() < responseSize)
   {
@@ -89,18 +87,17 @@ bool doRequest(byte request[], int requestSize, int responseSize)
     delay(50);
 
     if (millis()-startMillis > 1000) {
-      // timeout
-      Serial.println("Time out2");
+      timeOut = true;
       return false;
     }
   }
 
-  // Log.printf("request: final copy to CO2out\r\n");
   for (int i = 0; i < responseSize; i++)
   {
     response[i] = CO2Serial.read();
   }
 
+  timeOut = false;
   return true;
 }
 

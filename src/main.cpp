@@ -26,6 +26,9 @@
 #include "log.h"
 #include "senseair_s8.h"
 
+/* BEGIN CONFIGURATION */
+#define DEBUG_BAUDRATE 115200
+
 #define LORA_CS 18
 #define LORA_RESET 23
 #define LORA_DIO0 26
@@ -45,10 +48,10 @@
 
 #define SEALEVELPRESSURE_HPA (1013.25)
 
+#define BME280_ADDRESS_ALTERNATE 0x76
+
 unsigned long previousMillisProbe = 0;
 unsigned long intervalProbe = 4000;      // this is the internal update interval of the CO2 sensor
-unsigned long previousMillisPublish = 0;
-unsigned long intervalPublish = 10000;
 
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 Adafruit_BME680 bme; // I2C
@@ -56,7 +59,6 @@ Adafruit_BME680 bme; // I2C
 char ssid[23];
 
 void setup() {
-  Serial.begin(115200);
 
    // Get deviceId
   snprintf(ssid, 23, "MCUDEVICE-%llX", ESP.getEfuseMac());
@@ -73,7 +75,7 @@ void setup() {
   display.setTextColor(WHITE);
   display.setTextSize(1);
 
-  if (!bme.begin(0x76)) {
+  if (!bme.begin(BME280_ADDRESS_ALTERNATE)) {
     Serial.println(F("Could not find a valid BME680 sensor, check wiring!"));
     while (1);
   }
@@ -85,26 +87,28 @@ void setup() {
   bme.setIIRFilterSize(BME680_FILTER_SIZE_3);
   bme.setGasHeater(320, 150); // 320*C for 150 ms
 
-  Serial.println("Hier3");
-  // co2_setup();
-
-  Serial.println("Hier5");
   display.setCursor(10,10);
   display.print("BME680 found");
 
+
+  co2_setup();
+  
   LoRa.setPins(LORA_CS, LORA_RESET, LORA_DIO0);
   if (!LoRa.begin(LORA_FREQ)) {
-    Serial.println("Starting LoRa failed!");
+    // Serial.println("Starting LoRa failed!");
     while (1);
   }
 
-  display.setCursor(10,25);
+  display.setCursor(5,25);
   display.print("LORA OK");
+  display.setCursor(5,40);
+  display.print("Sampling started");
+  display.setCursor(5,55);
+  display.print("SSID: " + String(ssid) + " m");
+  
   display.display();
 
-  display.setCursor(10,40);
-  display.print("Sampling started");
-  display.display();
+
 
   delay(2500);
 
@@ -119,35 +123,65 @@ void setup() {
 
 void sendMessage(String outgoing);
 void displayAndSendBmeValues();
+void displayAndSendCO2Value();
 
 void loop() {
+
   // Tell BME680 to begin measurement.
   unsigned long endTime = bme.beginReading();
   if (endTime == 0) {
-    Serial.println(F("Failed to begin reading :("));
+    // Serial.println(F("Failed to begin reading :("));
     return;
   }
-  Serial.print(F("Reading started at "));
-  Serial.print(millis());
-  Serial.print(F(" and will finish at "));
-  Serial.println(endTime);
 
-  Serial.println(F("You can do other work during BME680 measurement."));
-  delay(50); // This represents parallel work.
-  // There's no need to delay() until millis() >= endTime: bme.endReading()
-  // takes care of that. It's okay for parallel work to take longer than
-  // BME680's measurement time.
+  unsigned long startTime = millis();
 
-  // Obtain measurement results from BME680. Note that this operation isn't
-  // instantaneous even if milli() >= endTime due to I2C/SPI latency.
+  delay(endTime - startTime); // This represents parallel work.
+
   if (!bme.endReading()) {
-    Serial.println(F("Failed to complete reading :("));
+    // Serial.println(F("Failed to complete reading :("));
     return;
+  }
+
+  co2_requestValueAndStatus();
+
+  if (calibrationStatus == 2) {
+    co2_checkBackgroundCalibrationAck();
   }
 
   displayAndSendBmeValues();
 
-  delay(2000);
+  delay(30000);
+
+  displayAndSendCO2Value();
+
+  delay(30000);
+}
+
+void displayAndSendCO2Value() {
+    display.setCursor(7,55);
+    display.print("CO2:  " + String(co2_value) + " ppm");
+    display.display();
+
+  // co2. Don't send 0 values. Minimum = 400
+  if (co2_value > 0) {
+    String payload = "";
+    payload += "{\"co2_status\":";
+    payload += String(co2_status);
+    payload += ",\"co2_value\":";
+    payload += String(co2_value);
+    payload += ",\"timeOut\":";
+    payload += String(timeOut);
+    payload += ",\"sensor\":";
+    payload += "\"senseair s8\"";
+    payload += ",\"device\":";
+    payload += "\"";
+    payload += ssid;
+    payload += "\"";
+    payload += "}";
+
+    sendMessage(payload);
+  }
 }
 
 void displayAndSendBmeValues() {
@@ -155,21 +189,8 @@ void displayAndSendBmeValues() {
     String temp = String(bme.readTemperature());
     String pressure = String(bme.readPressure() / 100);
     String humidity = String(bme.readHumidity());
-    String gasResistance = String(bme.gas_resistance / 1000);
+    String gasResistance = String(bme.gas_resistance);
     String altitude = String(bme.readAltitude(SEALEVELPRESSURE_HPA));
-
-    display.clearDisplay();
-    display.setCursor(7,10);
-    display.print("Temp: " + temp + " C");
-    display.setCursor(7,22);
-    display.print("Press:" + pressure + " hPa");
-    display.setCursor(7,34);
-    display.print("Hum:  " + humidity + " %");
-    display.setCursor(7,46);
-    display.print("Gas:  " + gasResistance + " m");
-    display.setCursor(7,58);
-    display.print("SSID: " + String(ssid) + " m");
-    display.display();
 
     String payload = "";
     payload += "{\"temperature\":";
@@ -178,6 +199,12 @@ void displayAndSendBmeValues() {
     payload += pressure;
     payload += ",\"humidity\":";
     payload += humidity;
+    payload += ",\"co2_status\":";
+    payload += String(co2_status);
+    payload += ",\"cor_value\":";
+    payload += String(co2_value);
+    payload += ",\"timeOut\":";
+    payload += String(timeOut);
     payload += ",\"gas_resistance\":";
     payload += gasResistance;
     payload += ",\"altitude\":";
@@ -197,5 +224,4 @@ void sendMessage(String outgoing) {
   LoRa.beginPacket();                   // start packet
   LoRa.print(outgoing);                 // add payload
   LoRa.endPacket();                     // finish packet and send it
-  Serial.println(outgoing);
 }

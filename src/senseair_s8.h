@@ -1,6 +1,7 @@
 extern unsigned long co2_value;
 extern unsigned long co2_status;
 extern unsigned long co2_ABCperiod;
+extern bool timeOut;
 /*
 0: no status
 1: couldn't start calibration
