@@ -6,7 +6,6 @@
 
 ![image](https://github.com/umbm/TTGO-LoRa32-V2.1-T3_V1.6/blob/master/T3_1.6.jpg)
 
-
 Component | Wire   | ESP
 ----------- |--------| --------------
 BME680 VCC | RED    | 3V3
@@ -18,3 +17,7 @@ SENSEAIR UART RxD | BLUE | TxD GPIO1
 SENSEAIR UART TxD | GREEN | RxD GPIO3
 SENSEAIR VCC | RED | 5V
 SENSEAIR GND | BLACK | GND
+
+## Documentation
+[LilyGo](https://lilygo.cc/products/lora3)
+[Board pins](https://github.com/Xinyuan-LilyGo/TTGO-LoRa-Series)
