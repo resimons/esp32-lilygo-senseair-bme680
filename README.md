@@ -2,7 +2,7 @@
 
 ## Connections
 
-## Pin layout ESP32
+## Pin layout LilyGO TTGO T3 LoRa32 433MHz V1.6.1 ESP32
 
 ![image](https://github.com/umbm/TTGO-LoRa32-V2.1-T3_V1.6/blob/master/T3_1.6.jpg)
 
