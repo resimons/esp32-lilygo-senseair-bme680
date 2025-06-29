@@ -173,8 +173,6 @@ void displayAndSendCO2Value() {
     payload += String(co2_status);
     payload += ",\"co2_value\":";
     payload += String(co2_value);
-    payload += ",\"timeOut\":";
-    payload += String(timeOut);
     payload += ",\"sensor\":";
     payload += "\"senseair s8\"";
     payload += ",\"device\":";
