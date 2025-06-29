@@ -210,12 +210,6 @@ void displayAndSendBmeValues() {
     payload += pressure;
     payload += ",\"humidity\":";
     payload += humidity;
-    payload += ",\"co2_status\":";
-    payload += String(co2_status);
-    payload += ",\"cor_value\":";
-    payload += String(co2_value);
-    payload += ",\"timeOut\":";
-    payload += String(timeOut);
     payload += ",\"gas_resistance\":";
     payload += gasResistance;
     payload += ",\"altitude\":";
