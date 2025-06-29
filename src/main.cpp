@@ -87,7 +87,7 @@ void setup() {
   bme.setIIRFilterSize(BME680_FILTER_SIZE_3);
   bme.setGasHeater(320, 150); // 320*C for 150 ms
 
-  display.setCursor(10,10);
+  display.setCursor(5,10);
   display.print("BME680 found");
 
 
@@ -104,13 +104,16 @@ void setup() {
   display.setCursor(5,40);
   display.print("Sampling started");
   display.setCursor(5,55);
-  display.print("SSID: " + String(ssid) + " m");
+  display.print(String(ssid));
   
   display.display();
 
 
 
   delay(2500);
+
+  display.clearDisplay();
+
 
   LoRa.setPreambleLength(8);
   LoRa.setSpreadingFactor(7);
@@ -191,6 +194,16 @@ void displayAndSendBmeValues() {
     String humidity = String(bme.readHumidity());
     String gasResistance = String(bme.gas_resistance);
     String altitude = String(bme.readAltitude(SEALEVELPRESSURE_HPA));
+
+    display.setCursor(7,7);
+    display.print("Temp: " + temp + " C");
+    display.setCursor(7,19);
+    display.print("Press:" + pressure + " hPa");
+    display.setCursor(7,31);
+    display.print("Hum:  " + humidity + " %");
+    display.setCursor(7,43);
+    display.print("Gas:  " + gasResistance);
+    display.display();
 
     String payload = "";
     payload += "{\"temperature\":";
