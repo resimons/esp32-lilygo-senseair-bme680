@@ -169,10 +169,10 @@ void displayAndSendCO2Value() {
   // co2. Don't send 0 values. Minimum = 400
   if (co2_value > 0) {
     String payload = "";
-    payload += "{\"co2_status\":";
-    payload += String(co2_status);
-    payload += ",\"co2_value\":";
+    payload += "{\"co2_value\":";
     payload += String(co2_value);
+    payload += ",\"co2_status\":";
+    payload += String(co2_status);
     payload += ",\"sensor\":";
     payload += "\"senseair s8\"";
     payload += ",\"device\":";
@@ -190,7 +190,7 @@ void displayAndSendBmeValues() {
     String temp = String(bme.readTemperature());
     String pressure = String(bme.readPressure() / 100);
     String humidity = String(bme.readHumidity());
-    String gasResistance = String(bme.gas_resistance);
+    String gasResistance = String(bme.gas_resistance / 1000);
     String altitude = String(bme.readAltitude(SEALEVELPRESSURE_HPA));
 
     display.setCursor(7,7);
