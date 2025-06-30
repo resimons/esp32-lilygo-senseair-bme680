@@ -1,19 +1,4 @@
-/*
-  LoRa Duplex communication with Sync Word
 
-  Sends a message every half second, and polls continually
-  for new incoming messages. Sets the LoRa radio's Sync Word.
-
-  The Sync Word is basically the radio's network ID. Radios with different
-  Sync Words will not receive each other's transmissions. This is one way you
-  can filter out radios you want to ignore, without making an addressing scheme.
-
-  See the Semtech datasheet, http://www.semtech.com/images/datasheet/sx1276.pdf
-  for more on Sync Word.
-
-  created 28 April 2017
-  by Tom Igoe
-*/
 #include <SPI.h>              // include libraries
 #include <LoRa.h>
 #include <SPI.h>
@@ -104,7 +89,7 @@ void setup() {
   display.setCursor(5,40);
   display.print("Sampling started");
   display.setCursor(5,55);
-  display.print(String(ssid));
+  display.print(String(ssid).substr(10););
   
   display.display();
 
