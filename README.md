@@ -35,7 +35,8 @@ Note that SDO of BME680 is connected to the ground. This forces the sensors addr
 ## Where to buy
 
 [LoRa32](https://www.tinytronics.nl/nl/development-boards/microcontroller-boards/met-lora/lilygo-ttgo-t3-lora32-433mhz-v1.6.1-esp32)
-[BME680]([https://www.tinytronics.nl/nl/sensoren/lucht/druk/bme280-digitale-barometer-druk-en-vochtigheid-sensor-module](https://www.tinytronics.nl/nl/sensoren/lucht/druk/bme680-sensor-module-met-level-converter-luchtdruk-luchtkwaliteit-luchtvochtigheid-temperatuur))
+[BME680](https://www.tinytronics.nl/nl/sensoren/lucht/druk/bme680-sensor-module-met-level-converter-luchtdruk-luchtkwaliteit-luchtvochtigheid-temperatuur)
+[SenseAir S8](https://www.tinytronics.nl/nl/sensoren/lucht/gas/senseair-s8-lp-co2-sensor-004-0-0053)
 
 ## Documentation
 
