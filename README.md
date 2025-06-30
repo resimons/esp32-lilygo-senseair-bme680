@@ -1,4 +1,7 @@
-![Build](https://github.com/KlausMu/esp32-co2monitor/actions/workflows/build-platformio.yml/badge.svg)
+# Connect a BME680 to a LilyGO TTGO T3 LoRa32 433MHz V1.6.1 ESP32
+
+The ESP will read the data from the sensor and puts it over the air.
+The data is received by another TTGO LoRa32 using [OpenMQTTGateway](https://docs.openmqttgateway.com/)
 
 ## Pin layout LilyGO TTGO T3 LoRa32 433MHz V1.6.1 ESP32
 
