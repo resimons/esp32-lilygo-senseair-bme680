@@ -32,6 +32,11 @@ So, for uploading firmware the BMD680 VCC should be disconnected.
 
 Note that SDO of BME680 is connected to the ground. This forces the sensors address to 0x76 in order to void interference with the I2C of the display.
 
+## Where to buy
+
+[LoRa32](https://www.tinytronics.nl/nl/development-boards/microcontroller-boards/met-lora/lilygo-ttgo-t3-lora32-433mhz-v1.6.1-esp32)
+[BME680]([https://www.tinytronics.nl/nl/sensoren/lucht/druk/bme280-digitale-barometer-druk-en-vochtigheid-sensor-module](https://www.tinytronics.nl/nl/sensoren/lucht/druk/bme680-sensor-module-met-level-converter-luchtdruk-luchtkwaliteit-luchtvochtigheid-temperatuur))
+
 ## Documentation
 
 [LilyGo](https://lilygo.cc/products/lora3)
