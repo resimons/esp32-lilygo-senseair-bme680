@@ -42,3 +42,5 @@ Note that SDO of BME680 is connected to the ground. This forces the sensors addr
 
 [LilyGo](https://lilygo.cc/products/lora3)
 [Board pins](https://github.com/Xinyuan-LilyGo/TTGO-LoRa-Series)
+[BME680](https://www.tinytronics.nl/product_files/003658_bme680-module-gas-temperature-pressure-and-humidity-sensor-with-level-converter-datasheet.pdf)
+[SenseAir S8](https://www.tinytronics.nl/product_files/003207_Senseair_S8_LP_datasheet.pdf)
