@@ -1,11 +1,15 @@
 # Connect a BME680 to a LilyGO TTGO T3 LoRa32 433MHz V1.6.1 ESP32
 
-The ESP will read the data from the sensor and puts it over the air.
+The ESP will read the data from the sensors and puts it over the air.
 The data is received by another TTGO LoRa32 using [OpenMQTTGateway](https://docs.openmqttgateway.com/)
 
 ## Pin layout LilyGO TTGO T3 LoRa32 433MHz V1.6.1 ESP32
 
 ![image](https://github.com/umbm/TTGO-LoRa32-V2.1-T3_V1.6/blob/master/T3_1.6.jpg)
+
+![image](https://www.tinytronics.nl/image/cache/catalog/products/product-003658/bme680-module-gas-temperature-pressure-and-humidity-sensor-with-level-converter-1200x1200.jpg)
+
+![image](https://www.tinytronics.nl/image/cache/data/product-3207/senseair-s8-lp-co2-sensor-004-0-0053-front-1500x1500.jpg)
 
 ## Wiring
 
