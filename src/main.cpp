@@ -95,8 +95,6 @@ void setup() {
 
   delay(2500);
 
-  display.clearDisplay();
-
   LoRa.setPreambleLength(8);
   LoRa.setSpreadingFactor(7);
   LoRa.setSignalBandwidth(125E3);
@@ -133,6 +131,8 @@ void loop() {
   if (calibrationStatus == 2) {
     co2_checkBackgroundCalibrationAck();
   }
+
+  display.clearDisplay();
 
   displayAndSendBmeValues();
 
