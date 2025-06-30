@@ -89,16 +89,13 @@ void setup() {
   display.setCursor(5,40);
   display.print("Sampling started");
   display.setCursor(5,55);
-  display.print(String(ssid).substr(10););
+  display.print(String(ssid).substring(10));
   
   display.display();
-
-
 
   delay(2500);
 
   display.clearDisplay();
-
 
   LoRa.setPreambleLength(8);
   LoRa.setSpreadingFactor(7);
@@ -154,12 +151,12 @@ void displayAndSendCO2Value() {
   // co2. Don't send 0 values. Minimum = 400
   if (co2_value > 0) {
     String payload = "";
-    payload += "{\"co2_value\":";
+    payload += "{\"co2\":";
     payload += String(co2_value);
-    payload += ",\"co2_status\":";
+    payload += ",\"status\":";
     payload += String(co2_status);
     payload += ",\"sensor\":";
-    payload += "\"senseair s8\"";
+    payload += "\"senseairs8\"";
     payload += ",\"device\":";
     payload += "\"";
     payload += ssid;
