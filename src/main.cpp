@@ -110,22 +110,6 @@ void displayAndSendCO2Value();
 
 void loop() {
 
-  // Tell BME680 to begin measurement.
-  unsigned long endTime = bme.beginReading();
-  if (endTime == 0) {
-    // Serial.println(F("Failed to begin reading :("));
-    return;
-  }
-
-  unsigned long startTime = millis();
-
-  delay(endTime - startTime); // This represents parallel work.
-
-  if (!bme.endReading()) {
-    // Serial.println(F("Failed to complete reading :("));
-    return;
-  }
-
   co2_requestValueAndStatus();
 
   if (calibrationStatus == 2) {
@@ -136,11 +120,11 @@ void loop() {
 
   displayAndSendBmeValues();
 
-  delay(30000);
+  delay(10000);
 
   displayAndSendCO2Value();
 
-  delay(30000);
+  delay(10000);
 }
 
 void displayAndSendCO2Value() {
@@ -169,25 +153,30 @@ void displayAndSendCO2Value() {
 
 void displayAndSendBmeValues() {
 
-    String temp = String(bme.readTemperature());
-    String pressure = String(bme.readPressure() / 100);
-    String humidity = String(bme.readHumidity());
+    if (! bme.performReading()) {
+    Serial.println("Failed to perform reading :(");
+    return;
+  }
+
+    String temperature = String(bme.temperature);
+    String pressure = String(bme.pressure / 100);
+    String humidity = String(bme.humidity);
     String gasResistance = String(bme.gas_resistance / 1000);
     String altitude = String(bme.readAltitude(SEALEVELPRESSURE_HPA));
 
     display.setCursor(7,7);
-    display.print("Temp: " + temp + " C");
+    display.print("Temp: " + temperature + " C");
     display.setCursor(7,19);
     display.print("Press:" + pressure + " hPa");
     display.setCursor(7,31);
     display.print("Hum:  " + humidity + " %");
     display.setCursor(7,43);
-    display.print("Gas:  " + gasResistance);
+    display.print("Gas:  " + gasResistance + " kOhms");
     display.display();
 
     String payload = "";
     payload += "{\"temperature\":";
-    payload += temp;
+    payload += temperature;
     payload += ",\"pressure\":";
     payload += pressure;
     payload += ",\"humidity\":";
