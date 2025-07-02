@@ -158,10 +158,15 @@ void displayAndSendBmeValues() {
     return;
   }
 
-    String temperature = String(bme.temperature);
-    String pressure = String(bme.pressure / 100);
-    String humidity = String(bme.humidity);
-    String gasResistance = String(bme.gas_resistance / 1000);
+   float f_temperature = bme.temperature;
+   float f_humidity = bme.humidity;
+   float f_pressure = bme.pressure / 100.0;
+   float f_gasResistance = bme.gas_resistance / 1000.0;
+
+    String temperature = String(f_temperature);
+    String pressure = String(f_pressure);
+    String humidity = String(f_humidity);
+    String gasResistance = String(f_gasResistance);
     String altitude = String(bme.readAltitude(SEALEVELPRESSURE_HPA));
 
     display.setCursor(7,7);
