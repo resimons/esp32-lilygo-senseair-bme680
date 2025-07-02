@@ -137,7 +137,7 @@ void displayAndSendCO2Value() {
     String payload = "";
     payload += "{\"co2\":";
     payload += String(co2_value);
-    payload += ",\"status\":";
+    payload += ",\"co2status\":";
     payload += String(co2_status);
     payload += ",\"sensor\":";
     payload += "\"senseairs8\"";
