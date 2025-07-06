@@ -6,8 +6,6 @@
 #include <Adafruit_BME680.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
-#include "co2ValuesArray.h"
-#include "timeHelper.h"
 
 #include "config.h"
 #include "log.h"
@@ -39,8 +37,6 @@
 
 unsigned long previousMillisProbe = 0;
 unsigned long intervalProbe = 4000;      // this is the internal update interval of the CO2 sensor
-unsigned long previousMillisPublish = 0;
-unsigned long intervalPublish = 10000;
 
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 Adafruit_BME680 bme; // I2C
@@ -79,9 +75,6 @@ void setup() {
   display.setCursor(5,10);
   display.print("BME680 found");
 
-  timeHelper_setup();
-
-  co2valuesArray_init();
 
   co2_setup();
   
@@ -117,35 +110,21 @@ void displayAndSendCO2Value();
 
 void loop() {
 
-    unsigned long currentMillis = millis();
+  co2_requestValueAndStatus();
 
-  if (currentMillis - previousMillisProbe >= intervalProbe)
-  {
-    previousMillisProbe = currentMillis;
-
-    co2_requestValueAndStatus();
-    co2values.addCO2value(co2_value);
-
-    if (calibrationStatus == 2) {
-      co2_checkBackgroundCalibrationAck();
-    }
-
-    display.clearDisplay();
-
-    displayAndSendBmeValues();
-
+  if (calibrationStatus == 2) {
+    co2_checkBackgroundCalibrationAck();
   }
 
-  if (currentMillis - previousMillisPublish >= intervalPublish)
-  {
-    previousMillisPublish = currentMillis;
+  display.clearDisplay();
 
-    timeHelper_update();
+  displayAndSendBmeValues();
 
-    co2values.maintainValues();
+  delay(10000);
 
-    displayAndSendCO2Value();
-  }
+  displayAndSendCO2Value();
+
+  delay(10000);
 }
 
 void displayAndSendCO2Value() {
