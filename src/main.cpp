@@ -120,11 +120,11 @@ void loop() {
 
   displayAndSendBmeValues();
 
-  delay(10000);
+  delay(30000);
 
   displayAndSendCO2Value();
 
-  delay(10000);
+  delay(30000);
 }
 
 void displayAndSendCO2Value() {
