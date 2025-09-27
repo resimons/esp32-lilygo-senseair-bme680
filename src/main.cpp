@@ -2,6 +2,7 @@
 #include <SPI.h>              // include libraries
 #include <LoRa.h>
 #include <SPI.h>
+#include <WiFi.h>
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BME680.h>
 #include <Adafruit_GFX.h>
@@ -42,11 +43,17 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 Adafruit_BME680 bme; // I2C
 
 char ssid[23];
+uint8_t macAddr[6];
+char sMacAddr[18];
+
+void publish_alive();
 
 void setup() {
 
    // Get deviceId
   snprintf(ssid, 23, "MCUDEVICE-%llX", ESP.getEfuseMac());
+  WiFi.macAddress(macAddr);   // The MAC address is stored in the macAddr array.
+  snprintf(sMacAddr, 18, "%02x:%02x:%02x:%02x:%02x:%02x", macAddr[0], macAddr[1], macAddr[2], macAddr[3], macAddr[4], macAddr[5]);
 
   Wire.begin(OLED_SDA, OLED_SCL);
 
@@ -93,15 +100,14 @@ void setup() {
   
   display.display();
 
-  delay(2500);
-
   LoRa.setPreambleLength(8);
   LoRa.setSpreadingFactor(7);
   LoRa.setSignalBandwidth(125E3);
   LoRa.setCodingRate4(5);
   LoRa.setSyncWord(0x12);
 
-  // sendAlive(ssid);
+  publish_alive();
+  delay(2500);
 }
 
 void sendMessage(String outgoing);
@@ -144,6 +150,10 @@ void displayAndSendCO2Value() {
     payload += ",\"device\":";
     payload += "\"";
     payload += ssid;
+    payload += "\"";
+    payload += ",\"mac\":";
+    payload += "\"";
+    payload += sMacAddr;
     payload += "\"";
     payload += "}";
 
@@ -196,9 +206,31 @@ void displayAndSendBmeValues() {
     payload += "\"";
     payload += ssid;
     payload += "\"";
+    payload += ",\"mac\":";
+    payload += "\"";
+    payload += sMacAddr;
+    payload += "\"";
     payload += "}";
 
     sendMessage(payload);
+}
+
+void publish_alive() {
+
+  // maximum message length 128 Byte
+  String payload = "";
+  payload += "{\"device\":";
+  payload += "\"";
+  payload += ssid;
+  payload += "\"";
+  payload += ",\"type\":";
+  payload += "\"iamalive\"";
+  payload += ",\"mac\":";
+  payload += "\"";
+  payload += sMacAddr;
+  payload += "\"";
+  payload += "}";
+  sendMessage(payload);
 }
 
 void sendMessage(String outgoing) {
