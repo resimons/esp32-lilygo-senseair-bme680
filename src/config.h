@@ -28,9 +28,6 @@ const char* const mqttTopicBme680       = "topic/bme680/sensor";
 const char* const mqqtTopicAlive         = "topic/iamalive";
 
 
-// --- language and timezone ----------------------------------------------------------------------------------------------------------------
-#include "lang/en.h"
-
 // https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
 #define myTimezone                 "Europe/Berlin"
 

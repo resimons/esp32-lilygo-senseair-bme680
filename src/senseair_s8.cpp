@@ -134,7 +134,7 @@ void co2_requestValueAndStatus()
   }
 
   if ((co2_valueOld != co2_value) || (co2_statusOld != co2_status)) {
-    Log.printf("CO2: %lu ppm, status: %lu\r\n", co2_value, co2_status);
+    Serial.printf("CO2: %lu ppm, status: %lu\r\n", co2_value, co2_status);
   }
 }
 
@@ -147,7 +147,7 @@ void co2_requestABCperiod()
   co2_ABCperiod = response[3] * 256 + response[4];
 
   if (co2_ABCperiodOld != co2_ABCperiod) {
-    Log.printf("CO2 ABC-period: %lu h\r\n", co2_ABCperiod);
+    Serial.printf("CO2 ABC-period: %lu h\r\n", co2_ABCperiod);
   }
 }
 
@@ -168,9 +168,9 @@ bool co2_clearBackgroundCalibrationAck()
   }
   checkResult = checkResult && (i==8);
   if (checkResult) {
-    Log.printf("co2_clearBackgroundCalibrationAck successfully started\r\n");
+    Serial.printf("co2_clearBackgroundCalibrationAck successfully started\r\n");
   } else {
-    Log.printf("WARNING: co2_clearBackgroundCalibrationAck could not be started\r\n");
+    Serial.printf("WARNING: co2_clearBackgroundCalibrationAck could not be started\r\n");
     return false;
   }
 
@@ -205,9 +205,9 @@ bool co2_startBackgroundCalibration()
   }
   checkResult = checkResult && (i==8);
   if (checkResult) {
-    Log.printf("co2_startBackgroundCalibration successfully started\r\n");
+    Serial.printf("co2_startBackgroundCalibration successfully started\r\n");
   } else {
-    Log.printf("WARNING: co2_startBackgroundCalibration could not be started\r\n");
+    Serial.printf("WARNING: co2_startBackgroundCalibration could not be started\r\n");
     return false;
   }
 
@@ -227,9 +227,9 @@ bool co2_checkBackgroundCalibrationAck()
   checkResult = checkResult && (response[2] = 0x02);
   checkResult = checkResult && ((response[4] & (1 << 5)) != 0);
   if (checkResult) {
-    Log.printf("co2_checkBackgroundCalibrationAck successfully received\r\n");
+    Serial.printf("co2_checkBackgroundCalibrationAck successfully received\r\n");
   } else {
-    Log.printf("co2_checkBackgroundCalibrationAck not yet received\r\n");
+    Serial.printf("co2_checkBackgroundCalibrationAck not yet received\r\n");
     return false;
   }
 
