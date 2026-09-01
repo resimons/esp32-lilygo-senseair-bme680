@@ -25,7 +25,7 @@ const int mqtt_server_port              = 8883;
 
 const char* const mqttTopicSenseAir     = "topic/senseair8/co2";
 const char* const mqttTopicBme680       = "topic/bme680/sensor";
-const char* const mqqtTopicAlive         = "topic/iamalive";
+const char* const mqqtTopicHeartbeat         = "devices/heartbeat";
 
 
 // https://en.wikipedia.org/wiki/List_of_tz_database_time_zones

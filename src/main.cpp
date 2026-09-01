@@ -8,7 +8,6 @@
 #include <Adafruit_SSD1306.h>
 
 #include "config.h"
-#include "log.h"
 #include "senseair_s8.h"
 
 /* BEGIN CONFIGURATION */
@@ -38,12 +37,17 @@
 #define SENSOR_INTERVAL_MS   30000   // interval between BME680 and CO2 transmissions
 #define STARTUP_DELAY_MS      2500   // pause after setup to show OLED status
 
+#define HEARTBEAT_INTERVAL_MINUTES 90                            // interval between heartbeat messages
+#define HEARTBEAT_INTERVAL_MS (HEARTBEAT_INTERVAL_MINUTES * 60000UL)
+
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 Adafruit_BME680 bme; // I2C
 
 char ssid[23];
 uint8_t macAddr[6];
 char sMacAddr[18];
+
+static unsigned long lastHeartbeatMillis = 0;
 
 void sendMessage(String outgoing) {
   LoRa.beginPacket();                   // start packet
@@ -133,7 +137,7 @@ void displayAndSendCO2Value() {
   }
 }
 
-void publish_alive() {
+void publish_heartbeat() {
 
   // maximum message length 128 Byte
   String payload = "";
@@ -142,7 +146,9 @@ void publish_alive() {
   payload += ssid;
   payload += "\"";
   payload += ",\"type\":";
-  payload += "\"iamalive\"";
+  payload += "\"heartbeat\"";
+  payload += ",\"device_type\":";
+  payload += "\"LilyGO TTGO T3\"";
   payload += ",\"mac\":";
   payload += "\"";
   payload += sMacAddr;
@@ -208,7 +214,8 @@ void setup() {
   LoRa.setCodingRate4(5);
   LoRa.setSyncWord(0x12);
 
-  publish_alive();
+  publish_heartbeat();
+  lastHeartbeatMillis = millis();
   delay(STARTUP_DELAY_MS);
 }
 
@@ -226,6 +233,11 @@ void loop() {
 
   co2_requestValueAndStatus();
   displayAndSendCO2Value();
+
+  if (millis() - lastHeartbeatMillis >= HEARTBEAT_INTERVAL_MS) {
+    publish_heartbeat();
+    lastHeartbeatMillis = millis();
+  }
 
   delay(SENSOR_INTERVAL_MS);
 }

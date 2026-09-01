@@ -36,9 +36,13 @@ The `loop()` alternates every 30 seconds:
 2. Read BME680 and send payload via LoRa → `displayAndSendBmeValues()`
 3. 30s delay
 4. Send CO2 payload via LoRa → `displayAndSendCO2Value()`
-5. 30s delay
+5. If the heartbeat interval has elapsed, send a heartbeat payload via LoRa → `publish_heartbeat()`
+6. 30s delay
 
 Each payload is a JSON string sent as a raw LoRa packet. The device identifies itself using `ssid` (derived from `ESP.getEfuseMac()`) and MAC address.
+
+### Heartbeat (`src/main.cpp`)
+`publish_heartbeat()` sends a `"type":"heartbeat"` payload once at startup and then periodically, gated by a non-blocking `millis()` comparison against `lastHeartbeatMillis` (so it doesn't disturb the blocking sensor delays). The interval is configurable via `HEARTBEAT_INTERVAL_MINUTES` in the `/* BEGIN CONFIGURATION */` block at the top of `main.cpp` (default 5 minutes).
 
 ### SenseAir S8 driver (`src/senseair_s8.cpp/.h`)
 Custom Modbus/UART driver using `HardwareSerial(2)` on GPIO 1 (TXD2) / GPIO 3 (RXD2). Implements:

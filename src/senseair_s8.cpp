@@ -2,7 +2,6 @@
 #include <Ticker.h>
 
 #include "config.h"
-#include "log.h"
 
 //Senseair Sensor UART
 #define BAUDRATE 9600
