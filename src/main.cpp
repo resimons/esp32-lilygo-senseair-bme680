@@ -44,8 +44,6 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 Adafruit_BME680 bme; // I2C
 
 char ssid[23];
-uint8_t macAddr[6];
-char sMacAddr[18];
 
 static unsigned long lastHeartbeatMillis = 0;
 
@@ -100,10 +98,6 @@ void displayAndSendBmeValues() {
   payload += "\"";
   payload += ssid;
   payload += "\"";
-  payload += ",\"mac\":";
-  payload += "\"";
-  payload += sMacAddr;
-  payload += "\"";
   payload += "}";
 
   sendMessage(payload);
@@ -127,10 +121,6 @@ void displayAndSendCO2Value() {
     payload += "\"";
     payload += ssid;
     payload += "\"";
-    payload += ",\"mac\":";
-    payload += "\"";
-    payload += sMacAddr;
-    payload += "\"";
     payload += "}";
 
     sendMessage(payload);
@@ -138,6 +128,8 @@ void displayAndSendCO2Value() {
 }
 
 void publish_heartbeat() {
+
+  const int uptime = static_cast<int>(millis() / 60000UL);
 
   // maximum message length 128 Byte
   String payload = "";
@@ -149,10 +141,8 @@ void publish_heartbeat() {
   payload += "\"heartbeat\"";
   payload += ",\"device_type\":";
   payload += "\"LilyGO TTGO T3\"";
-  payload += ",\"mac\":";
-  payload += "\"";
-  payload += sMacAddr;
-  payload += "\"";
+  payload += ",\"uptime\":";
+  payload += uptime;
   payload += "}";
   sendMessage(payload);
 }
@@ -161,8 +151,6 @@ void setup() {
 
   // Get deviceId
   snprintf(ssid, 23, "MCUDEVICE-%llX", ESP.getEfuseMac());
-  WiFi.macAddress(macAddr);   // The MAC address is stored in the macAddr array.
-  snprintf(sMacAddr, 18, "%02x:%02x:%02x:%02x:%02x:%02x", macAddr[0], macAddr[1], macAddr[2], macAddr[3], macAddr[4], macAddr[5]);
 
   Wire.begin(OLED_SDA, OLED_SCL);
 
@@ -235,6 +223,8 @@ void loop() {
   displayAndSendCO2Value();
 
   if (millis() - lastHeartbeatMillis >= HEARTBEAT_INTERVAL_MS) {
+    // Wait a while because LoRa can't send 2 messages straight to each other.
+    delay(1000);
     publish_heartbeat();
     lastHeartbeatMillis = millis();
   }
